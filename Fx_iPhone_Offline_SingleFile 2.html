@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fx - רולטה</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            direction: rtl;
+            text-align: center;
+            background-color: #fdfdfd;
+            margin: 0;
+            padding: 20px;
+        }
+        #app {
+            margin: 0 auto;
+            max-width: 500px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input {
+            font-size: 16px;
+            padding: 5px;
+            width: 100px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fx - אפליקציית רולטה חכמה</h1>
+    <div id="app">
+        <label>מספר אחרון:</label>
+        <input type="number" id="lastNumber" />
+        <button onclick="addNumber()">+ הוסף</button>
+        <div>
+            <button onclick="setDirection('cw')">עם כיוון השעון</button>
+            <button onclick="setDirection('ccw')">נגד כיוון השעון</button>
+        </div>
+        <h3>תוצאות אחרונות</h3>
+        <div id="recentNumbers" style="font-size: 18px; color: darkblue;"></div>
+        <h3>תחזית</h3>
+        <div id="prediction" style="font-size: 18px;"></div>
+    </div>
+    <script>
+        let recentNumbers = [];
+        let recentDirections = [];
+        let direction = 'cw';
+
+        const wheel = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6,
+            27, 13, 36, 11, 30, 8, 23, 10, 5, 24,
+            16, 33, 1, 20, 14, 31, 9, 22, 18, 29,
+            7, 28, 12, 35, 3, 26];
+
+        function setDirection(dir) {
+            direction = dir;
+            alert("הכיוון שנבחר: " + (dir === 'cw' ? "עם כיוון השעון" : "נגד כיוון השעון"));
+        }
+
+        function addNumber() {
+            const input = document.getElementById('lastNumber');
+            const num = parseInt(input.value.trim());
+            if (!isNaN(num) && num >= 0 && num <= 36) {
+                recentNumbers.unshift(num);
+                recentDirections.unshift(direction);
+                if (recentNumbers.length > 20) {
+                    recentNumbers.pop();
+                    recentDirections.pop();
+                }
+                input.value = '';
+                updateDisplay();
+            } else {
+                alert("נא להזין מספר חוקי בין 0 ל־36");
+            }
+        }
+
+        function getPosition(num) {
+            return wheel.indexOf(num);
+        }
+
+        function calculatePrediction() {
+            if (recentNumbers.length < 2) return "אין מספיק נתונים.";
+
+            const currentDirection = direction;
+            let refIndex = -1;
+            for (let i = 1; i < recentDirections.length; i++) {
+                if (recentDirections[i] === currentDirection) {
+                    refIndex = i;
+                    break;
+                }
+            }
+            if (refIndex === -1) return "אין מספיק נתוני עבר.";
+
+            const currentNum = recentNumbers[0];
+            const pastNum = recentNumbers[refIndex];
+            const pos1 = getPosition(currentNum);
+            const pos2 = getPosition(pastNum);
+            if (pos1 === -1 || pos2 === -1) return "שגיאה במיקומים.";
+
+            let distance = (pos1 - pos2 + 37) % 37;
+            if (currentDirection === 'ccw') {
+                distance = (pos2 - pos1 + 37) % 37;
+            }
+
+            let predIndex = (getPosition(currentNum) + (currentDirection === 'cw' ? distance : -distance) + 37) % 37;
+            let prediction = wheel[predIndex];
+
+            const neighbors = [];
+            for (let i = -2; i <= 2; i++) {
+                let idx = (predIndex + i + 37) % 37;
+                neighbors.push(wheel[idx]);
+            }
+
+            return "תחזית: [" + neighbors.join(", ") + "]";
+        }
+
+        function updateDisplay() {
+            document.getElementById('recentNumbers').innerHTML = recentNumbers.join(', ');
+            document.getElementById('prediction').innerText = calculatePrediction();
+        }
+    </script>
+</body>
+</html>
