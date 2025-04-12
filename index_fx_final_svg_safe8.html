@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>Fx</title>
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+  <style>
+    body {{ background: #111; color: white; font-family: sans-serif; text-align: center; }}
+    input, button {{ font-size: 1.2em; margin: 10px; }}
+  </style>
+</head>
+<body>
+  <img src="icon.png" alt="roulette" width="96" height="96">
+  <h1>Fx</h1>
+  <label for="lastNum">מספר אחרון:</label><br>
+  <input id="lastNum" type="number"><br>
+  <button id="cw">עם כיוון השעון</button>
+  <button id="ccw">נגד כיוון השעון</button><br>
+  <button onclick="add()">הוסף</button>
+  <h2>תוצאות אחרונות:</h2>
+  <div id="history"></div>
+  <h2>תחזית למספר הבא:</h2>
+  <div id="prediction"></div>
+
+<script>
+let history = [], direction = 'cw';
+document.getElementById('cw').onclick = () => toggleDir('cw');
+document.getElementById('ccw').onclick = () => toggleDir('ccw');
+function toggleDir(dir) {{
+  direction = dir;
+  document.getElementById('cw').style.background = dir === 'cw' ? 'blue' : 'black';
+  document.getElementById('ccw').style.background = dir === 'ccw' ? 'blue' : 'black';
+}}
+function add() {{
+  const val = +document.getElementById('lastNum').value;
+  if (!isNaN(val)) {{
+    history.unshift(val);
+    update();
+  }}
+}}
+function update() {{
+  document.getElementById('history').innerText = history.slice(0, 5).join(', ');
+  document.getElementById('prediction').innerText = direction === 'cw' ? history[0] + 1 : history[0] - 1;
+}}
+</script>
+</body>
+</html>
